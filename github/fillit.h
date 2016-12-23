@@ -6,14 +6,12 @@
 /*   By: kacoulib <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/13 21:02:30 by kacoulib          #+#    #+#             */
-/*   Updated: 2016/12/18 19:40:58 by kacoulib         ###   ########.fr       */
+/*   Updated: 2016/12/23 07:57:35 by kacoulib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FILLIT_H
 # define FILLIT_H
-
-# define FT_REPLACE (a, b) (a[i] == '#') ? a = b
 
 # include <unistd.h>
 # include <fcntl.h>
@@ -21,7 +19,9 @@
 
 typedef struct	s_tetri
 {
-	short		nb_newline;
+	short		x;
+	short		y;
+	short		nb_line;
 	short		nb_dot;
 	short		nb_hash;
 	short		i;
@@ -35,9 +35,8 @@ typedef struct	s_main_var
 	short		i;
 	char		fd;
 	int			BUFF_SIZE;
+	int			map_size;
 	int			error;
 	char		*buff;
-	char		r[26][20];
-	char		*map;
 }				t_main_var;
 #endif
