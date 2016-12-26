@@ -6,24 +6,12 @@
 /*   By: kacoulib <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/12/13 21:05:57 by kacoulib          #+#    #+#             */
-/*   Updated: 2016/12/23 11:15:58 by kacoulib         ###   ########.fr       */
+/*   Updated: 2016/12/26 14:21:00 by kacoulib         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fillit.h"
 #include <stdio.h>
-
-int				ft_match_col(char s1[], char s2[], int i, int j)
-{
-	while (j < 15)
-	{
-		printf("%d, %d\n", i, j);
-		if (s1[i + j] == '#' && s2[j] == '#')
-			return (0);
-		j += 5;
-	}
-	return (1);
-}
 
 /*
  ** decale all tetrimios to the Top-Left recursively
@@ -51,6 +39,75 @@ int				ft_decale_top_left(t_tetri *s, int i, int decale)
 	return ((!decale) ? 1 : ft_decale_top_left(s, 0, decale));
 }
 
+
+int			ft_reset_tetri(t_tetri *s, char *map, int *map_size)
+{
+	int		i;
+
+	i = -1;
+	while (map[++i])
+	{
+		map[i] = '.';
+		if (s[i].txt[0])
+		{
+			s[i].x = 0;
+			s[i].y = 0;
+		}
+	}
+	s[0].x = ++s[0].offset;
+	s[0].y = s[0].x / *map_size;
+	//if (s[0].x == *map_size && s[0].y == *map_size)
+	//	*map_size += 1;
+	return (1);
+}
+
+int				ft_isresolved(t_tetri s[], char *map, int *map_size)
+{
+	int			i;
+	int			j;
+
+	i = -1;
+	j = i + 1;
+	while (s[++i].txt[0])
+	{
+		while (s[++j].txt[0])
+		{
+			if (s[i].x == s[j].x || s[j].x >= *map_size)
+			{
+				ft_reset_tetri(s, map, map_size);
+				return (0);
+			}
+		}
+		j = i + 1;
+	}
+	j = 1;
+	while (map[++j])
+		if (j % (*map_size / i)== 0)
+			map[j] = '\n';
+	printf("%s\n", map);
+	return (1);
+}
+int				ft_test_tetri(t_tetri *s, char *map, int map_size)
+{
+	int			i;
+	int			j;
+
+	i = -1;
+	j = s->x;
+	while (++i < 19)
+	{
+		if (s->txt[i] == '#')
+		{
+			if (ft_isalnum(map[j]) || j >= map_size || map[j] == '\n')
+				return (0);
+			s->i++;
+		}
+		j++;
+	}
+	return (1);
+}
+
+
 /*
  ** resolve te tetrimios
  ** If the function find a position in the loop to place, it will call him self
@@ -60,45 +117,41 @@ int				ft_decale_top_left(t_tetri *s, int i, int decale)
  ** tetrimios
  */
 
-int				ft_resolve_tetri(t_tetri s[], int i, int j, int *map_size)
+int				ft_resolve_tetri(t_tetri s[], char *map, int i, int *map_size)
 {
-	int			l;
-	int			m;
-	int			k;
+	int			j;
+	int			stop;
 
-//		return (1);
-	k = 0;
-	l = -1;
-	m = 0;
-	i = 2;
-	j = 3;
-	map_size++;
-		printf("\n %d, %d\n", 4 - s[i].y, *map_size);
-		return(1);
-	while (s[i].y++ < 4)
-	{// tant que pas sur fini colone en partant de 0
-		while (++s[i].x < 4)
-		{// tant que pas fini de lire la ligne en partant de 0
-			k = (s[i].y * 5 - 2) + m;
-			//while (++l < 4)
-			//{
-			//	if (s[i].txt[k - l] == '#' && s[j].txt[m] == '#')
-			//		;
-			//	else
-			//		l = 3;
-			//}
-			ft_match_col(s[i].txt, s[j].txt, s[i].x, 0);
-		//	printf("s1[%d] && s2[%d] == #\n", s[i].x + m ,  m);
-			//return(0);
-		//l = + 1;
-			m += 5;
+	j = -1;
+	stop = 0;
+	while (s[++i].txt[0])
+	{
+		while (s[i].x < *map_size && !stop)
+		{
+			if (ft_test_tetri(&s[i], map, *map_size))
+			{
+				while ((++j + s[i].x) < *map_size)
+				{
+					if (s[i].txt[j] == '#')
+						map[s[i].x + j] = s[i].letter;
+					if (!ft_isalnum(map[s[i].x + j]) || s[j].txt[j] == '\n')
+						map[s[i].x + j] = '.';
+					stop = 1;
+				}
+			}
+			else
+				s[i].x++;
 		}
-		s[i].x = 0;
-		m = 0;
+		j = -1;
+		stop = 0;
 	}
-	//if ()
-	//printf("\n\n\n%d %d", s[i].x, s[i].y);
-	return (1);
+	//printf("\n%d %d", ft_isresolved(s, map, map_size), s[0].x);
+	//printf("\n%s", map);
+	//printf("\n%d", s[0].x);
+	//printf("\n%d", s[1].x);
+	//printf("\n%d", s[2].x);
+
+	return (ft_isresolved(s, map, map_size) ? 1 : ft_resolve_tetri(s, map, -1, map_size));
 }
 
 /*
@@ -140,6 +193,7 @@ int				main(int ac, char *av[])
 {
 	t_main_var	v;
 	t_tetri		tmp[26];
+	char		*map;
 	int			j;
 
 	j = 0;
@@ -152,7 +206,7 @@ int				main(int ac, char *av[])
 		v.buff[v.i] = '\0';
 		if (v.BUFF_SIZE == 20)
 		{
-			tmp[j] = (t_tetri){-1, 0, 0, 0, 0, 0, 0, j + 65, {0}};
+			tmp[j] = (t_tetri){0, 0, 0, 0, 0, 0, 0, j + 65, {0}};
 			ft_strncpy(tmp[j++].txt, v.buff, 19);
 			v.map_size += ft_decale_top_left(&tmp[j - 1], 0, 5);
 			v.BUFF_SIZE = 1;
@@ -161,7 +215,12 @@ int				main(int ac, char *av[])
 			v.BUFF_SIZE = 20;
 	}
 	close(v.fd);
-	if (!ft_check_tetri(tmp, 0, -1) || !ft_resolve_tetri(tmp, 0, 0, &v.map_size))
+	v.map_size = (v.map_size <= 4 ) ? 20 : v.map_size * 4 + 1;
+	//printf("\n%d", v.map_size);
+	map = ft_memalloc(v.map_size);
+	if (!map)
+		return (0);
+	if (!ft_check_tetri(tmp, 0, -1) || !ft_resolve_tetri(tmp, map, -1, &v.map_size))
 		ft_putstr("error\n");
 	return (0);
 }
